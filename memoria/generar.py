@@ -185,7 +185,8 @@ def cover(c, alumno):
     c.rect(0, 0, W, H, fill=1, stroke=0)
     c.setFillColor(HexColor(GREEN))
     c.rect(0, 0, 12, H, fill=1, stroke=0)
-    c.drawImage(str(HERE/"recursos"/"logo_uteq.png"), LEFT, H-153, 184, 97,
+    logo = ImageReader(str(HERE / "recursos" / "logo_uteq.png"))
+    c.drawImage(logo, LEFT, H-153, 184, 97,
                 preserveAspectRatio=True, mask="auto", anchor="w")
     y = H-178
     for label, size, face in [("Universidad Tecnológica de Querétaro", 18, "Bold"),
