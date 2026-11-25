@@ -29,5 +29,6 @@ El directorio indicado debe contener la base SQLite. Se utiliza una hebra de CPU
 - `entrenar.py` ajusta logística, XGBoost, red neuronal y controles, y conserva resultados agregados.
 - `informe.py` construye las cuatro figuras y el texto del caso. Si ya existen los resultados, `py -3.11 fraude/informe.py` permite regenerarlos sin reentrenar.
 - `resultados/metricas.json` documenta la huella SHA-256 de la base, conteos, variables, métricas, matriz de conteos a cada umbral, distribución y parámetros.
+- `resultados/a2_metricas.csv` presenta los valores completos por modelo de PR-AUC trapezoidal y AP en prueba, sus diferencias frente a logística y los intervalos de las diferencias de AP.
 - `resultados/epocas_red.csv` contiene pérdidas por época. `resultados/frontera_validacion.csv` contiene la máxima sensibilidad observada bajo distintos presupuestos de falsos positivos.
 - `informe.json` contiene las respuestas y rutas de las figuras utilizadas en el PDF.
