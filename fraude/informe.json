@@ -1,0 +1,56 @@
+{
+  "titulo": "Detección de fraude al autorizar un pago",
+  "introduccion": "Se estima la probabilidad de fraude de una transacción con tarjeta y se evalúa cuántos fraudes registrados pueden detectarse respetando un límite de alertas sobre operaciones legítimas. La decisión usa información disponible al autorizar el pago.",
+  "etl": [
+    "Se auditaron 4 284 000 filas de transacciones y 4 200 000 identificadores distintos. Los catálogos contienen 500 000 claves de cliente y 50 000 de comercio. La selección determinista por clave, independiente de la etiqueta y de la fecha, retuvo aproximadamente 5,0 % de las operaciones para permitir la reproducción en CPU.",
+    "La muestra inicial contenía 214 262 filas. Se quitaron 4 267 copias repetidas tras normalizar las categorías. Se excluyeron 0 claves con versiones contradictorias y 0 filas sin fecha o clase válida. Quedaron 209 995 operaciones únicas. La comprobación de llaves encontró 0 clientes y 0 comercios sin correspondencia utilizable en la muestra.",
+    "En la muestra depurada, 12 558 importes estaban vacíos y 3 123 eran negativos o iguales al marcador repetido 999999,9. Se conservó la operación, se indicó la ausencia y se imputó el importe con la mediana de su moneda aprendida en entrenamiento; en ausencia de una mediana por moneda, se usa la global de entrenamiento. Los códigos de moneda, dispositivo, categoría comercial y país se normalizaron; los vacíos tienen un nivel explícito."
+  ],
+  "variables": [
+    "La respuesta binaria is_fraud identifica el fraude observado. Las entradas son importe nominal transformado con log(1 + monto), intentos de PIN, indicadores de datos faltantes, hora y día de semana cíclicos, indicador de madrugada (00:00–05:59), moneda, dispositivo, categoría comercial (MCC) y país del comercio.",
+    "Se obtuvieron 32 columnas numéricas mediante codificación por categoría y estandarización de entradas continuas e indicadores numéricos con parámetros del entrenamiento. Se excluyeron los identificadores, el riesgo histórico calculado sin fecha de disponibilidad y los atributos de cliente sin versión histórica. La etiqueta jamás entra como predictor. Se supone que MCC y país ya se conocen al autorizar."
+  ],
+  "entrenamiento": [
+    "Partición cronológica de 2025: De enero a agosto, 139 782 operaciones y 8 629 fraudes. En septiembre y octubre, 35 122 operaciones y 2 242 fraudes. En noviembre y diciembre, 35 091 operaciones y 2 178 fraudes. El conjunto intermedio eligió el modelo, el umbral y el mejor punto de entrenamiento. La prueba se consultó después de fijar esas decisiones.",
+    "Regresión logística, penalización L2, máximo de 250 iteraciones y 35 efectivas. XGBoost, máximo de 850 árboles, tasa 0,05, profundidad 4 y paciencia de 40 rondas sin mejora en pérdida de validación. Se seleccionó la ronda 73 de 113 entrenadas. Para contrastar las interacciones se repitió XGBoost con árboles de una sola división.",
+    "Red con retropropagación, dos capas ocultas de 48 y 24 neuronas ReLU, Adam, lotes de 512 y 80 épocas. Se conservó el estado de menor entropía cruzada de validación. Para el control de ruido se repitió el entrenamiento con idénticos pesos iniciales y parámetros."
+  ],
+  "figura_etl": "resultados/a0_distribucion.png",
+  "pie_etl": "Frecuencia de fraude observado en cada periodo. Las barras usan la proporción de la clase 1 sobre todas las operaciones de ese bloque.",
+  "preguntas": [
+    {
+      "titulo": "A1. ¿Existe un umbral que capture el 80 % del fraude con menos del 1,5 % de falsos positivos?",
+      "respuesta": [
+        "Ninguno de los tres modelos alcanzó simultáneamente el 80 % de sensibilidad y menos del 1,5 % de falsos positivos en validación. Se recorrieron todos los cortes sobre probabilidades de validación. XGBoost tuvo la mayor precisión promedio en validación (0,2102). Para este modelo se maximizó el fraude capturado dentro del presupuesto de alertas, usando el umbral 0,25986. En validación alcanzó 13,56 % de sensibilidad y 1,49 % de falsos positivos.",
+        "Al congelar ese umbral y aplicarlo a noviembre–diciembre, detectó 284 de 2 178 fraudes (13,04 %) y marcó 468 de 32 913 operaciones legítimas (1,42 %). El primer corte de validación que sí alcanzó el 80 % de captura fue 0,03705 y requirió 57,75 % de falsos positivos. La tasa cuenta operaciones legítimas bloqueadas, no personas distintas.",
+        "En el mismo modelo, con umbral 0,65 se obtuvieron en validación sensibilidad de 0,49 % y falsos positivos de 0,01 %; con 0,82, 0,00 % y 0,00 %, respectivamente."
+      ],
+      "figura": "resultados/a1_frontera.png",
+      "pie": "Cada trazo representa el mayor fraude capturado para el presupuesto de falsos positivos del eje horizontal, en validación. Las guías señalan las dos metas operativas."
+    },
+    {
+      "titulo": "A2. ¿Cuánto cambia el área precisión–sensibilidad y qué patrones respaldan esa diferencia?",
+      "respuesta": [
+        "En prueba, el área trapezoidal bajo la curva completa (PR-AUC) fue 0,2050 para logística, 0,2092 para XGBoost y 0,2055 para la red. Los cambios frente a logística fueron +0,0043 y +0,0005. La precisión promedio (AP) suma los incrementos de sensibilidad en escalones y dio 0,2052, 0,2095 y 0,2057, respectivamente.",
+        "XGBoost cambió la AP en +0,0043 (IC 95 % [+0,0001, +0,0083]) y la red en +0,0005 (IC 95 % [−0,0032, +0,0044]). Se remuestrearon los mismos bloques de siete días para los tres modelos en 1 000 réplicas del periodo de prueba, con los modelos fijos. El intervalo de Red neuronal incluye cero.",
+        "El XGBoost aditivo de profundidad 1 obtuvo AP 0,2115. El control aditivo superó al árbol más profundo en prueba. La ganancia sobre la logística es compatible con efectos no lineales de variables individuales y estos datos no la atribuyen a interacciones.",
+        "El monto alto comienza en el percentil 90 del entrenamiento para cada moneda conocida. Las categorías MCC de mayor tasa en entrenamiento fueron viajes, restaurantes. En prueba, 63 de 280 pagos de monto alto en madrugada en estas categorías tenían etiqueta de fraude (22,50 %). Dentro de estas categorías, el cambio de tasa entre monto ordinario y alto fue 12,2 puntos porcentuales en madrugada y 6,5 el resto del día. La asociación observada describe esos pagos y depende del tamaño del subgrupo."
+      ],
+      "figura": "resultados/a2_precision_recall.png",
+      "pie": "La sensibilidad mide la fracción de fraudes detectados. La precisión mide cuántas alertas corresponden a fraude. La línea horizontal marca la prevalencia. Ambas áreas se calcularon con todos los umbrales antes de resumir los trazos."
+    },
+    {
+      "titulo": "A3. ¿Desde qué época divergen las pérdidas y qué ocurre al agregar ruido de etiqueta?",
+      "respuesta": [
+        "Se fijó una regla antes de entrenar. Se toma la primera secuencia de tres épocas consecutivas en las que la pérdida de validación supera en más de 0,0005 su mínimo previo y la de entrenamiento queda por debajo de su valor en la época de ese mínimo. En el entrenamiento con etiquetas observadas, la primera divergencia persistente comenzó en la época 27, tomando como referencia la 14, y quedó confirmada en la 29. El mínimo de validación fue 0,21650 en la época 14.",
+        "Como control se invirtió exactamente el 1,5 % redondeado de las etiquetas de entrenamiento (2 097 operaciones), por sorteo reproducible. Se mantuvieron intactas las etiquetas observadas de validación y prueba. Con ruido adicional, la primera divergencia persistente comenzó en la época 12, tomando como referencia la 11, y quedó confirmada en la 14. El mínimo de validación fue 0,21705 en la época 11.",
+        "El enunciado indica aproximadamente 1,5 % de inversiones previas. La tabla entrega una sola etiqueta por operación. El inicio detectado mide divergencia de pérdidas bajo la regla elegida; atribuir una época exacta a la memorización de las inversiones originales exigiría etiquetas verdaderas o la identidad de las operaciones alteradas."
+      ],
+      "figura": "resultados/a3_perdida.png",
+      "pie": "Las líneas continuas corresponden a etiquetas observadas y las discontinuas al control con ruido adicional. Una menor pérdida indica mejor ajuste a las etiquetas del bloque respectivo. El punto identifica el mínimo de validación del ajuste original."
+    }
+  ],
+  "limitaciones": [
+    "Los resultados describen una muestra de operaciones de un año y las etiquetas disponibles. La identidad de los fraudes verdaderos invertidos en origen y las pérdidas económicas por decisión no están documentadas. El importe se conserva en unidades nominales; los percentiles para contrastes se calculan dentro de cada moneda. La presencia de clientes recurrentes en distintos periodos refleja el uso cronológico; el estudio no valida específicamente la generalización a personas nuevas."
+  ]
+}

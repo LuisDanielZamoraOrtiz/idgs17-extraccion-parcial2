@@ -1,0 +1,582 @@
+{
+  "algoritmo_huella": "SHA-256 de todos los bytes del archivo, más WAL separado si entró en la lectura",
+  "fuentes": {
+    "fintech_fraud.db": {
+      "archivo": "fintech_fraud.db",
+      "bytes": 376557568,
+      "sha256": "226f09758c6f5aa6a180e7705562ecd40ad409ea6dd4f60ed7a8832cf0616ceb",
+      "sha256_wal_si_tiene_datos": null,
+      "tablas": {
+        "clientes": {
+          "filas_brutas": 502500,
+          "clave_logica": "client_id",
+          "claves_distintas_no_nulas": 500000,
+          "claves_nulas": 0,
+          "repeticiones_excedentes_clave_no_nula": 2500,
+          "campos": [
+            {
+              "orden": 1,
+              "campo": "client_id",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 2,
+              "campo": "edad",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 3,
+              "campo": "ingreso_anual",
+              "tipo_sqlite": "REAL",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 4,
+              "campo": "score_buro",
+              "tipo_sqlite": "REAL",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 5,
+              "campo": "antiguedad_meses",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 6,
+              "campo": "segmento",
+              "tipo_sqlite": "TEXT",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            }
+          ],
+          "foreign_keys_declaradas": [],
+          "ddl": "CREATE TABLE \"clientes\" (\n\"client_id\" INTEGER,\n  \"edad\" INTEGER,\n  \"ingreso_anual\" REAL,\n  \"score_buro\" REAL,\n  \"antiguedad_meses\" INTEGER,\n  \"segmento\" TEXT\n)"
+        },
+        "comercios": {
+          "filas_brutas": 50250,
+          "clave_logica": "merchant_id",
+          "claves_distintas_no_nulas": 50000,
+          "claves_nulas": 0,
+          "repeticiones_excedentes_clave_no_nula": 250,
+          "campos": [
+            {
+              "orden": 1,
+              "campo": "merchant_id",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 2,
+              "campo": "categoria_mcc",
+              "tipo_sqlite": "TEXT",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 3,
+              "campo": "pais",
+              "tipo_sqlite": "TEXT",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 4,
+              "campo": "riesgo_historico",
+              "tipo_sqlite": "REAL",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            }
+          ],
+          "foreign_keys_declaradas": [],
+          "ddl": "CREATE TABLE \"comercios\" (\n\"merchant_id\" INTEGER,\n  \"categoria_mcc\" TEXT,\n  \"pais\" TEXT,\n  \"riesgo_historico\" REAL\n)"
+        },
+        "transacciones": {
+          "filas_brutas": 4284000,
+          "clave_logica": "tx_id",
+          "claves_distintas_no_nulas": 4200000,
+          "claves_nulas": 0,
+          "repeticiones_excedentes_clave_no_nula": 84000,
+          "campos": [
+            {
+              "orden": 1,
+              "campo": "tx_id",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 2,
+              "campo": "client_id",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 3,
+              "campo": "merchant_id",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 4,
+              "campo": "timestamp",
+              "tipo_sqlite": "TEXT",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 5,
+              "campo": "monto",
+              "tipo_sqlite": "REAL",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 6,
+              "campo": "moneda",
+              "tipo_sqlite": "TEXT",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 7,
+              "campo": "dispositivo",
+              "tipo_sqlite": "TEXT",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 8,
+              "campo": "intentos_pin",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 9,
+              "campo": "is_fraud",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            }
+          ],
+          "foreign_keys_declaradas": [],
+          "ddl": "CREATE TABLE \"transacciones\" (\n\"tx_id\" INTEGER,\n  \"client_id\" INTEGER,\n  \"merchant_id\" INTEGER,\n  \"timestamp\" TEXT,\n  \"monto\" REAL,\n  \"moneda\" TEXT,\n  \"dispositivo\" TEXT,\n  \"intentos_pin\" INTEGER,\n  \"is_fraud\" INTEGER\n)"
+        }
+      }
+    },
+    "ecommerce_churn_ltv.db": {
+      "archivo": "ecommerce_churn_ltv.db",
+      "bytes": 201846784,
+      "sha256": "2c1b0fc88f464d18474a664f6053d948df56213c2c96d4dfe204877f6196dae5",
+      "sha256_wal_si_tiene_datos": null,
+      "tablas": {
+        "ordenes_compra": {
+          "filas_brutas": 1530000,
+          "clave_logica": "order_id",
+          "claves_distintas_no_nulas": 1500000,
+          "claves_nulas": 0,
+          "repeticiones_excedentes_clave_no_nula": 30000,
+          "campos": [
+            {
+              "orden": 1,
+              "campo": "order_id",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 2,
+              "campo": "user_id",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 3,
+              "campo": "total_pagado",
+              "tipo_sqlite": "REAL",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 4,
+              "campo": "dias_envio",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 5,
+              "campo": "devuelto",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 6,
+              "campo": "calificacion_estrellas",
+              "tipo_sqlite": "REAL",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            }
+          ],
+          "foreign_keys_declaradas": [],
+          "ddl": "CREATE TABLE \"ordenes_compra\" (\n\"order_id\" INTEGER,\n  \"user_id\" INTEGER,\n  \"total_pagado\" REAL,\n  \"dias_envio\" INTEGER,\n  \"devuelto\" INTEGER,\n  \"calificacion_estrellas\" REAL\n)"
+        },
+        "sesiones_web": {
+          "filas_brutas": 3060000,
+          "clave_logica": "session_id",
+          "claves_distintas_no_nulas": 3000000,
+          "claves_nulas": 0,
+          "repeticiones_excedentes_clave_no_nula": 60000,
+          "campos": [
+            {
+              "orden": 1,
+              "campo": "session_id",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 2,
+              "campo": "user_id",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 3,
+              "campo": "duracion_seg",
+              "tipo_sqlite": "REAL",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 4,
+              "campo": "paginas_vistas",
+              "tipo_sqlite": "REAL",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 5,
+              "campo": "dispositivo_os",
+              "tipo_sqlite": "TEXT",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 6,
+              "campo": "rebote",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            }
+          ],
+          "foreign_keys_declaradas": [],
+          "ddl": "CREATE TABLE \"sesiones_web\" (\n\"session_id\" INTEGER,\n  \"user_id\" INTEGER,\n  \"duracion_seg\" REAL,\n  \"paginas_vistas\" REAL,\n  \"dispositivo_os\" TEXT,\n  \"rebote\" INTEGER\n)"
+        },
+        "usuarios": {
+          "filas_brutas": 804000,
+          "clave_logica": "user_id",
+          "claves_distintas_no_nulas": 800000,
+          "claves_nulas": 0,
+          "repeticiones_excedentes_clave_no_nula": 4000,
+          "campos": [
+            {
+              "orden": 1,
+              "campo": "user_id",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 2,
+              "campo": "edad",
+              "tipo_sqlite": "REAL",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 3,
+              "campo": "canal_adquisicion",
+              "tipo_sqlite": "TEXT",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 4,
+              "campo": "suscripcion_prime",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 5,
+              "campo": "riesgo_abandono",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            }
+          ],
+          "foreign_keys_declaradas": [],
+          "ddl": "CREATE TABLE \"usuarios\" (\n\"user_id\" INTEGER,\n  \"edad\" REAL,\n  \"canal_adquisicion\" TEXT,\n  \"suscripcion_prime\" INTEGER,\n  \"riesgo_abandono\" INTEGER\n)"
+        }
+      }
+    },
+    "smart_grid_energy.db": {
+      "archivo": "smart_grid_energy.db",
+      "bytes": 413642752,
+      "sha256": "2bb8680987a0c49465460831c45c1a510f8b547b56b6dc8daa241909bf615f56",
+      "sha256_wal_si_tiene_datos": null,
+      "tablas": {
+        "lecturas_medidores": {
+          "filas_brutas": 4590000,
+          "clave_logica": "lectura_id",
+          "claves_distintas_no_nulas": 4500000,
+          "claves_nulas": 0,
+          "repeticiones_excedentes_clave_no_nula": 90000,
+          "campos": [
+            {
+              "orden": 1,
+              "campo": "lectura_id",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 2,
+              "campo": "substation_id",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 3,
+              "campo": "zona",
+              "tipo_sqlite": "TEXT",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 4,
+              "campo": "hora_idx",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 5,
+              "campo": "voltaje_v",
+              "tipo_sqlite": "TEXT",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 6,
+              "campo": "corriente_a",
+              "tipo_sqlite": "REAL",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 7,
+              "campo": "factor_potencia",
+              "tipo_sqlite": "REAL",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 8,
+              "campo": "consumo_kwh",
+              "tipo_sqlite": "REAL",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            }
+          ],
+          "foreign_keys_declaradas": [],
+          "ddl": "CREATE TABLE \"lecturas_medidores\" (\n\"lectura_id\" INTEGER,\n  \"substation_id\" INTEGER,\n  \"zona\" TEXT,\n  \"hora_idx\" INTEGER,\n  \"voltaje_v\" TEXT,\n  \"corriente_a\" REAL,\n  \"factor_potencia\" REAL,\n  \"consumo_kwh\" REAL\n)"
+        },
+        "subestaciones": {
+          "filas_brutas": 200,
+          "clave_logica": "substation_id",
+          "claves_distintas_no_nulas": 200,
+          "claves_nulas": 0,
+          "repeticiones_excedentes_clave_no_nula": 0,
+          "campos": [
+            {
+              "orden": 1,
+              "campo": "substation_id",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 2,
+              "campo": "zona",
+              "tipo_sqlite": "TEXT",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 3,
+              "campo": "capacidad_mw",
+              "tipo_sqlite": "REAL",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 4,
+              "campo": "anio_instalacion",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            }
+          ],
+          "foreign_keys_declaradas": [],
+          "ddl": "CREATE TABLE \"subestaciones\" (\n\"substation_id\" INTEGER,\n  \"zona\" TEXT,\n  \"capacidad_mw\" REAL,\n  \"anio_instalacion\" INTEGER\n)"
+        },
+        "telemetria_clima": {
+          "filas_brutas": 808000,
+          "clave_logica": "clima_id",
+          "claves_distintas_no_nulas": 800000,
+          "claves_nulas": 0,
+          "repeticiones_excedentes_clave_no_nula": 8000,
+          "campos": [
+            {
+              "orden": 1,
+              "campo": "clima_id",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 2,
+              "campo": "zona",
+              "tipo_sqlite": "TEXT",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 3,
+              "campo": "hora_idx",
+              "tipo_sqlite": "INTEGER",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 4,
+              "campo": "temperatura_c",
+              "tipo_sqlite": "REAL",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 5,
+              "campo": "humedad_pct",
+              "tipo_sqlite": "REAL",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            },
+            {
+              "orden": 6,
+              "campo": "velocidad_viento",
+              "tipo_sqlite": "REAL",
+              "not_null_declarado": false,
+              "valor_predeterminado_sql": null,
+              "posicion_pk_declarada": 0
+            }
+          ],
+          "foreign_keys_declaradas": [],
+          "ddl": "CREATE TABLE \"telemetria_clima\" (\n\"clima_id\" INTEGER,\n  \"zona\" TEXT,\n  \"hora_idx\" INTEGER,\n  \"temperatura_c\" REAL,\n  \"humedad_pct\" REAL,\n  \"velocidad_viento\" REAL\n)"
+        }
+      }
+    }
+  },
+  "contraste_con_metricas": {
+    "Fraude SHA-256": "226f09758c6f5aa6a180e7705562ecd40ad409ea6dd4f60ed7a8832cf0616ceb",
+    "Fraude clientes filas": 502500,
+    "Fraude clientes claves": 500000,
+    "Fraude comercios filas": 50250,
+    "Fraude comercios claves": 50000,
+    "Fraude transacciones filas": 4284000,
+    "Fraude transacciones claves": 4200000,
+    "Abandono SHA-256": "2c1b0fc88f464d18474a664f6053d948df56213c2c96d4dfe204877f6196dae5",
+    "Abandono ordenes_compra filas": 1530000,
+    "Abandono ordenes_compra claves": 1500000,
+    "Abandono sesiones_web filas": 3060000,
+    "Abandono sesiones_web claves": 3000000,
+    "Abandono usuarios filas": 804000,
+    "Abandono usuarios claves": 800000,
+    "Energía lecturas_medidores filas": 4590000,
+    "Energía lecturas_medidores claves": 4500000,
+    "Energía subestaciones filas": 200,
+    "Energía subestaciones claves": 200,
+    "Energía telemetria_clima filas": 808000,
+    "Energía telemetria_clima claves": 800000
+  }
+}

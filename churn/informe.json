@@ -1,0 +1,61 @@
+{
+  "titulo": "Abandono de clientes de comercio electrónico",
+  "introduccion": "Se evaluó si los patrones de navegación y compra identifican a usuarios con riesgo bajo (0), medio (1) o alto (2). Cada fila analítica representa un usuario; sus sesiones y pedidos se resumen antes del cruce.",
+  "etl": [
+    "Se abrieron las tres tablas en modo de solo lectura. Usuarios pasó de 804 000 a 800 000 filas, sesiones web de 3 060 000 a 3 000 000 y órdenes de 1 530 000 a 1 500 000. Las filas repetidas eran copias completas. Se verificaron llaves únicas y cero relaciones huérfanas.",
+    "Con los duplicados ya retirados, quedaron fuera del cálculo 44 988 duraciones, 45 027 conteos de páginas y 22 691 pagos con valores imposibles o centinelas. Los códigos −999, −50 y 999999,9 aparecen en la base. Se respetaron los datos ausentes y se normalizaron espacios y mayúsculas en canal y sistema operativo.",
+    "Las sesiones y los pedidos se agregaron por separado para evitar multiplicar filas. Se conservaron los 800 000 usuarios, incluidos 18 893 sin sesiones y 122 391 sin pedidos. El número de eventos ausentes vale cero; las medias o tasas sin denominador se imputan con la mediana de entrenamiento.",
+    "En una copia del entrenamiento se alteró el 2 % de celdas observadas en cuatro predictores: 2 888 ausentes y 2 890 centinelas. Tras detectar estos últimos, ambos tipos se imputaron con medianas aprendidas en entrenamiento. Las etiquetas y las particiones de evaluación conservaron sus valores originales."
+  ],
+  "variables": [
+    "Etiqueta ordinal de riesgo en toda la base: bajo 385 606, medio 263 492 y alto 150 902. La clase alta representa el 18,9 %.",
+    "Se usaron diez predictores: número de sesiones, tasa de rebote, duración media en segundos, páginas por sesión, fracción móvil, número de pedidos, pago medio, días medios de envío, tasa de devoluciones y valoración media. Las tasas están entre 0 y 1 y las estrellas observadas entre 1 y 5.",
+    "Entre los usuarios con datos válidos, la mediana de duración media fue 233,5 segundos (cuartiles 172,7 y 302), la de rebote fue 25 % (0 % y 50 %) y la de envío fue 3 días (2 y 4,75). Al menos tres de cada cuatro usuarios con pedidos tenían una tasa de devolución de cero. En los 800 000 usuarios hubo una mediana de cuatro sesiones y dos pedidos.",
+    "La fracción móvil usa sesiones con sistema identificado. Los demás promedios utilizan eventos con un valor válido. La edad, Prime, las claves y el canal se excluyeron de los predictores para estudiar comportamiento; el canal se conservó como variable nominal de auditoría."
+  ],
+  "entrenamiento": [
+    "Se extrajo una muestra estratificada reproducible por usuario (semilla 2026). Se asignaron 80 000 usuarios al entrenamiento, 20 000 a validación y 120 000 a prueba. Los demás solo participaron en la caracterización. Los tres conjuntos son disjuntos. Imputación, escalado y PCA se ajustaron únicamente en entrenamiento.",
+    "La logística tuvo un techo de 250 iteraciones y convergió en 17. XGBoost usó profundidad 4, tasa 0,05 y techo de 800 rondas, con tres árboles por ronda (una clase por árbol). Parada temprana tras 25 rondas sin mejorar la pérdida de validación. Para las diez variables eligió la ronda 602 de 627 ejecutadas.",
+    "La red con capas ocultas 24 y 12, ReLU y Adam entrenó 120 épocas por retropropagación. Se conservaron los pesos de la época 108, con la menor pérdida de validación observada. Se fijaron un mínimo de 50, un techo de 120 y paciencia de 12.",
+    "Macro F1 de validación: Logística 0,8317; XGBoost 0,8576; Red neuronal 0,8596. Se seleccionó Red neuronal por ese criterio entre los tres modelos completos. Macro F1 en prueba: Logística 0,8309; XGBoost 0,8553; Red neuronal 0,8561. La regla de asignar siempre riesgo bajo obtuvo 0,2168."
+  ],
+  "preguntas": [
+    {
+      "titulo": "B1. Navegación y logística en riesgo medio y alto",
+      "respuesta": [
+        "Se compararon 39 524 usuarios de riesgo medio y 22 635 de riesgo alto de prueba. Para cada variable se fijó la dirección en entrenamiento. La AUC ROC mide con qué frecuencia ordena un usuario alto por encima de uno medio, con medio crédito a empates. Resultados: Días medios de envío 0,726; Duración media de sesión 0,694; Tasa de rebote 0,658; Tasa de devoluciones 0,566.",
+        "El promedio de días de envío fue el indicador con mayor separación. Entre quienes tienen una observación válida, fue de 4,01 días en riesgo medio y 5,79 en alto. A mayor riesgo se observaron sesiones más cortas y más rebotes y devoluciones. Faltan la fecha del evento y una segunda etiqueta por usuario para comprobar una escalada posterior."
+      ],
+      "figura": "resultados/b1_navegacion_logistica.png",
+      "pie": "Poder discriminante de cuatro marcadores sobre los mismos usuarios de prueba de clases 1 y 2. La línea vertical en 0,50 indica ordenación al azar."
+    },
+    {
+      "titulo": "B2. Cinco componentes y rendimiento predictivo",
+      "respuesta": [
+        "El PCA de las diez variables estandarizadas conservó 65,10 % de la varianza de entrenamiento en cinco componentes. Las contribuciones individuales, en orden, fueron 24,81 %, 10,91 %, 10,01 %, 9,99 %, 9,36 %.",
+        "Logística pasó de 0,8309 a 0,8083 de macro F1 en prueba. Su puntuación cayó 2,25 puntos porcentuales.",
+        "XGBoost pasó de 0,8553 a 0,8296 de macro F1 en prueba. Su puntuación cayó 2,57 puntos porcentuales.",
+        "Cada modelo se entrenó de nuevo con cinco componentes; ambas versiones de cada algoritmo comparten usuarios y evaluación. El macro F1 pondera por igual bajo, medio y alto. Conservar variación general no implica conservar toda la información de la etiqueta."
+      ],
+      "figura": "resultados/b2_macro_f1.png",
+      "pie": "Macro F1 de logística y XGBoost en la misma prueba, con diez variables o cinco componentes. Una puntuación mayor indica mejor balance entre precisión y sensibilidad por clase."
+    },
+    {
+      "titulo": "B3. Falsos negativos por canal de adquisición",
+      "respuesta": [
+        "El modelo elegido en validación (red neuronal) asigna la clase de mayor probabilidad. Una omisión es un riesgo alto clasificado como bajo o medio. La tasa divide las omisiones entre todos los altos reales de cada canal. Orgánico: 574 de 3 695 (15,53 %; IC 95 % 14,40 % a 16,74 %); Social Ads: 959 de 6 516 (14,72 %; IC 95 % 13,88 % a 15,60 %); Paid Search: 518 de 3 623 (14,30 %; IC 95 % 13,20 % a 15,48 %).",
+        "Entre los tres canales solicitados, Orgánico presentó la tasa puntual más elevada. También ocupa el primer lugar al incluir los demás canales. En cantidad de casos, Social Ads acumuló más omisiones (959). Los intervalos de los tres canales de interés se solapan al menos en parte. Conviene revisar omisiones de forma prioritaria y medir una regla piloto antes de justificar un tratamiento distinto por canal."
+      ],
+      "figura": "resultados/b3_canales.png",
+      "pie": "Tasa de falsos negativos de la clase alta e intervalos de Wilson al 95 %. El eje horizontal muestra el rango observado. El color verde identifica los tres canales de la pregunta."
+    }
+  ],
+  "limitaciones": [
+    "La base no incluye fechas, coste de retención, abandono observado posterior ni horizonte de anticipación. Se evalúa concordancia con la etiqueta disponible. Para estudiar transiciones habría que enlazar historiales fechados con una etiqueta posterior.",
+    "Los modelos comparan muestras estratificadas de usuarios de la misma base. Las métricas estiman rendimiento en ese contexto y requieren reevaluación con una cohorte temporal externa antes de orientar decisiones operativas."
+  ],
+  "figura_etl": "resultados/etl_calidad.png",
+  "pie_etl": "Fracción ausente y fracción inválida de cinco variables, calculadas en las tablas sin duplicados antes de imputar.",
+  "figura_entrenamiento": "resultados/entrenamiento_red.png",
+  "pie_entrenamiento": "Pérdida de red en entrenamiento y validación por época. La línea vertical señala los pesos restaurados."
+}

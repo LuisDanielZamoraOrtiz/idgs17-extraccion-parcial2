@@ -1,0 +1,59 @@
+{
+  "titulo": "Estabilidad de la red y demanda eléctrica",
+  "introduccion": "Con los sensores disponibles hasta la hora t estimamos el consumo medio de la siguiente hora en la misma subestación. También evaluamos si una alerta anticipa una hora de consumo especialmente alto para esa instalación. La base registra energía medida y capacidad instalada. Carece de una etiqueta verificada de fallo o sobrecarga.",
+  "figura_etl": "resultados/distribucion_consumo.png",
+  "pie_etl": "Distribución del consumo medio de la hora siguiente en los 42 000 pares muestreados para entrenamiento. La línea marca la mediana global. Los límites de las clases se calcularon por subestación.",
+  "figura_entrenamiento": "resultados/convergencia.png",
+  "pie_entrenamiento": "Pérdida logarítmica por época de la red eléctrica. Cada curva se calculó sobre la misma muestra en las 130 épocas. Se conservaron los pesos de la época 39.",
+  "etl": [
+    "Se conciliaron 4 590 000 lecturas, 808 000 registros de clima y 200 subestaciones. Por ID se retiraron 90 000 repeticiones de lectura y 8 000 de clima. Se conservó la primera versión según el orden del archivo. En 3 377 copias de lecturas se detectó alguna diferencia de contenido registrado.",
+    "Se normalizaron zonas y sufijos V. El catálogo recuperó la zona de 269 439 lecturas. 47 982 registros climáticos carecían de una clave válida para la unión. Se invalidaron centinelas como -999 y 999999,9 y valores físicamente incoherentes. Los sensores ausentes se imputaron por la mediana de entrenamiento. Las horas sin consumo observado quedaron fuera del objetivo.",
+    "La agregación se hizo por subestación-hora y por zona-hora antes de la unión. Hay 3 023 288 de 5 256 000 subestación-horas observadas, con mediana de 1 lectura(s) por hora observada y máximo de 9. La comparación de dos horas seguidas produjo 1 738 158 pares. La ausencia de una medición no se convirtió en consumo cero.",
+    "Si cada registro cubriese exactamente una hora, sumar sus kWh y dividir entre 1 000 × capacidad en MW mediría la fracción de capacidad observada. La mayor fue 5,7 %. Hubo 0 horas con fracción ≥ 1. La cobertura de todos los medidores es desconocida. Para estudiar alertas se definieron clases relativas usando los datos históricos de cada estación."
+  ],
+  "variables": [
+    "Objetivo continuo: media de consumo_kwh por lectura de la subestación en t+1, para comparar intervalos con distinto número de lecturas. Objetivo categórico: clase 0 por debajo del percentil 70, clase 1 entre los percentiles 70 y 90, y clase 2 desde el percentil 90. Los umbrales se calcularon por estación únicamente en entrenamiento. Los P70 oscilaron entre 127,1 y 164,6 kWh; los P90, entre 156,7 y 195,5 kWh.",
+    "Entradas de t: voltaje (V), corriente (A), factor de potencia, consumo (kWh), temperatura (°C), humedad (%), viento en la unidad de origen y número de lecturas. Se añadieron consumo medio y cobertura de las últimas 24 horas, ciclo de 24 horas, antigüedad representada por el año de instalación, capacidad (MW) y zona. Las variables del instante t+1 solo definen la respuesta o los subgrupos de evaluación."
+  ],
+  "entrenamiento": [
+    "Separación cronológica por hora objetivo: entrenamiento [0, 18396), validación [18396, 22338) y prueba [22338, 26280). Para limitar memoria se tomó una muestra uniforme reproducible de 42 000/1 217 352 pares en entrenamiento y 32 000/259 738 en validación. Se evaluaron todos los 261 068 pares de prueba. Semilla 2026.",
+    "La regresión logística convergió en 23 de 250 iteraciones. XGBoost usó tasa 0,05, techo de 850 rondas y paciencia de 35. La mejor ronda por pérdida de validación fue 80. La red ReLU 24–12 con Adam y retropropagación completó 130 épocas. La menor pérdida de validación se obtuvo en la época 39, cuyos pesos se evaluaron en prueba.",
+    "Macro-F1 de prueba con la clase más probable: logística 0,275, XGBoost 0,275, red 0,275. Como referencias, repetir la clase previa dio 0,358 y asignar siempre nominal, 0,275. El F1 de las tres clases pondera a cada clase por igual.",
+    "Como ensayo separado se perturbó una copia del entrenamiento con ruido normal de desviación 0,5 en escala estandarizada sobre 5 918 de 294 000 celdas de sensores (≈2 %). Con la misma logística, el macro-F1 de prueba fue 0,2750 frente a 0,2751 con la muestra limpia. La prueba y las etiquetas se conservaron idénticas.",
+    "Para la demanda continua se entrenó una regresión Ridge con los mismos predictores. Error absoluto medio de prueba en kWh por lectura: 29,02 con Ridge, 40,04 repitiendo la última medición y 32,68 empleando la media histórica global. R² de Ridge: 0,195."
+  ],
+  "preguntas": [
+    {
+      "titulo": "C1. ¿Con cuánta anticipación y precisión se detecta una hora crítica?",
+      "respuesta": [
+        "La anticipación fue de una hora. Consideramos industriales Norte_Industrial y Bajio_Manufactura. En prueba, la temperatura media observada de la zona superó 30 °C en 13 693 pares industriales, incluidos 2 637 críticos según el umbral histórico. Esta medición futura se usó solo para identificar el subgrupo evaluado.",
+        "Al elegir la clase más probable, la red detectó 0 de 2 637 críticos, con sensibilidad 0,0 % y precisión indefinida. Para emitir alertas se eligió el umbral 0,1414 que maximizó el F1 crítico en validación (industrial >30 °C). En prueba detectó 2 321 de 2 637 críticos y acertó 2 321 de 11 101 avisos. Sensibilidad 88,0 %, precisión 20,9 %, 8 780 falsas alarmas y 316 omisiones. La proporción crítica de partida fue 19,3 %.",
+        "Se comprobó también la indicación «more 120 f» como temperatura superior a 120 °F (48,89 °C). Ninguna hora industrial de prueba superó ese segundo corte. Sus dos métricas carecen de denominador. El máximo industrial horario observado en prueba fue 41,35 °C. La red también superó 120 épocas de entrenamiento."
+      ],
+      "figura": "resultados/calor.png",
+      "pie": "Red neuronal, prueba cronológica y temperatura industrial superior a 30 °C. La sensibilidad cuenta críticos detectados entre los críticos reales. La precisión cuenta aciertos entre los avisos emitidos. «n/d» indica un denominador cero."
+    },
+    {
+      "titulo": "C2. ¿Qué variables físicas distinguen carga nominal y elevada?",
+      "respuesta": [
+        "Se estandarizaron cuatro mediciones de la propia hora del evento. Imputación, escala y PCA se ajustaron en entrenamiento. De los cuatro ejes se eligió por entrenamiento el de mayor diferencia estandarizada entre las clases 0 y 1. Se orientó hacia la media elevada. Fue PC4 y explicó 24,7 % de la varianza total. Sus correlaciones con los sensores fueron temperatura 0,71, corriente 0,62, voltaje 0,30, factor de potencia -0,09.",
+        "En prueba, el centro nominal quedó en -0,30 y el elevado en 0,52 sobre ese eje. La diferencia fue de 0,94 desviaciones agrupadas. Temperatura y corriente dominan este contraste contemporáneo. Las cuatro componentes explicaron varianzas muy próximas, de 24,7 % a 25,3 %, así que la dirección concreta puede variar entre muestras."
+      ],
+      "figura": "resultados/cargas_pca.png",
+      "pie": "Cargas expresadas como correlaciones entre sensores y componente elegida en entrenamiento. La longitud representa asociación y el signo indica la dirección."
+    },
+    {
+      "titulo": "C3. ¿Las subestaciones antiguas presentan más errores o eventos críticos?",
+      "respuesta": [
+        "Con la clase de máxima probabilidad de la red, las 61 estaciones anteriores a 2005 registraron 23 721 errores y 8 006 críticos en 79 204 horas elegibles: 29,9 % y 10,1 %. Las 139 instaladas desde 2005 registraron 54 377 errores y 18 106 críticos en 181 864 horas: 29,9 % y 10,0 %.",
+        "Antiguas menos modernas: +0,05 puntos porcentuales de error y +0,15 de frecuencia crítica. Intervalos exploratorios del 95 % al remuestrear estaciones completas 1 000 veces por cohorte: error [-0,35, +0,48] y frecuencia [-0,10, +0,41] puntos. Ambos incluyen cero. La muestra permite diferencias tan pequeñas en ambos sentidos. La frecuencia mide cuántas veces se rebasa el umbral propio de cada estación."
+      ],
+      "figura": "resultados/infraestructura.png",
+      "pie": "Porcentaje de errores y de horas críticas relativas en la prueba. Cada barra usa el total de horas evaluadas dentro de su cohorte de instalación."
+    }
+  ],
+  "limitaciones": [
+    "La base carece de etiquetas operativas de fallo, identificadores de medidor, duración confirmada del intervalo y verificación de cobertura completa. Una alarma de consumo inusualmente alto requiere confirmación física antes de interpretarse como sobrecarga de la red.",
+    "Se predijo una hora a partir de otra observada en la misma estación. Las parejas separadas por huecos no forman parte de este experimento. Los resultados corresponden al periodo reservado y a estas instalaciones."
+  ]
+}
